@@ -4,9 +4,10 @@ ASP.NET Core Web API + Angular Project.
 
 ## 環境
 
-* .NET Core SDK
-* Node
-* Angular CLI
+* dotnet cli 2.0.0
+* @angular/cli: 1.4.9
+
+エディタはvs codeがいいかも。
 
 ## プロジェクト作成
 
@@ -102,10 +103,57 @@ $ mv src/ Client
 }
 ```
 
+### ASP.NETからAngular Appを参照できるようにする
 
+参考: [ASP.NET Core上でSPAを動かしたい](https://qiita.com/kuluna/items/39ef29b906696a034070)
 
-## Development server
-## Code scaffolding
-## Build
-## Running unit tests
-## Running end-to-end tests
+`Startup.cs`を修正
+
+```csharp
+public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+{
+     loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+     loggerFactory.AddDebug();
+
+　   app.UseStaticFiles();
+
+　    app.UseMvc(routes =>
+     {
+         routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
+         routes.MapSpaFallbackRoute("spa-fallback", new { controller = "Home", action = "Index" });
+     });
+}
+```
+
+`Controllers/HomeController.cs`を追加
+
+```c#
+using Microsoft.AspNetCore.Mvc;
+
+namespace NgDotTodo.Controllers
+{
+  /// <summary>
+  /// Default MVC Controller
+  /// </summary>
+  public class HomeController : Controller
+  {
+    /// <summary>
+    /// Open the wwwroot/index.html
+    /// </summary>
+    public IActionResult Index() => File("/index.html", "text/html");
+  }
+}
+```
+
+#### 動作確認
+
+```sh
+$ ng build
+$ dotnet run
+```
+
+`http://localhost:5000`でAngularアプリが動けばOK
+
+#### 課題
+
+* live-reloadができない
